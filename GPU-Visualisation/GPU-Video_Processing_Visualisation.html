@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPU Architecture for AI Video Processing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        /* Explicitly define the 25-column grid class */
+        .grid-cols-25 {
+            grid-template-columns: repeat(25, minmax(0, 1fr));
+        }
+        /* Custom styles for components */
+        .cuda-core {
+            width: 10px;
+            height: 10px;
+            background-color: #14b8a6; /* teal-500 */
+            opacity: 0.6;
+            transition: all 0.3s ease-in-out;
+        }
+        .cuda-core.highlight {
+            background-color: #5eead4; /* teal-300 */
+            opacity: 1;
+            transform: scale(1.2);
+            box-shadow: 0 0 8px #5eead4;
+        }
+        .nvdec-block {
+            transition: all 0.3s ease-in-out;
+            border: 2px solid #6366f1; /* indigo-500 */
+        }
+        .nvdec-block.highlight {
+            background-color: #4f46e5; /* indigo-600 */
+            transform: scale(1.05);
+            box-shadow: 0 0 15px #818cf8; /* indigo-300 */
+        }
+        .component-fade {
+            opacity: 0.2;
+            transform: scale(0.95);
+        }
+
+        /* GPU Visual Styles */
+        .gpu-pcb {
+            background-color: #1a202c; /* gray-900 */
+            border-bottom: 13px solid #718096;
+        }
+        .io-bracket {
+            background: linear-gradient(#718096, #4a5568);
+        }
+        .fan-shroud {
+            background: #2d3748;
+            border: 1px solid #4a5568;
+        }
+        .fan {
+            background: #1a202c;
+            border: 2px solid #4a5568;
+        }
+        .fan-spinner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            animation: spin 3s linear infinite;
+        }
+        .fan-spinner::before,
+        .fan-spinner::after {
+            content: '';
+            position: absolute;
+            background-color: #718096; /* fan blade color */
+            border-radius: 2px;
+        }
+        .fan-spinner::before {
+            width: 80%;
+            height: 4px;
+            left: 10%;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .fan-spinner::after {
+            width: 4px;
+            height: 80%;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Animation Styles */
+        .flow-dot {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background-color: #fbbf24;
+            border-radius: 50%;
+            opacity: 0;
+            box-shadow: 0 0 15px #fbbf24;
+            animation-timing-function: ease-in-out;
+        }
+        .flow-pulse {
+            position: absolute;
+            background-color: #f59e0b;
+            border-radius: 99px;
+            opacity: 0;
+            transform: scale(0);
+            transform-origin: center;
+            box-shadow: 0 0 10px #f59e0b;
+        }
+
+        /* Keyframes for the multi-stage flow */
+        .animate-flow-1-in { animation: flow-1-in 1.5s 0.5s forwards; }
+        @keyframes flow-1-in {
+            0% { opacity: 0; transform: translateX(-80px); }
+            50% { opacity: 1; }
+            100% { opacity: 0; transform: translateX(0); }
+        }
+
+        .animate-flow-2-process-nvdec { animation: flow-2-process 0.8s 2s forwards; }
+        @keyframes flow-2-process {
+            0% { opacity: 0; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.1); }
+            100% { opacity: 0; transform: scale(1); }
+        }
+
+        .animate-flow-3-to-cuda { animation: flow-3-to-cuda 1.5s 2.8s forwards; }
+        @keyframes flow-3-to-cuda {
+            0% { opacity: 0; transform: translate(0, 0); }
+            50% { opacity: 1; }
+            100% { opacity: 0; transform: translate(180px, 0); }
+        }
+
+        .animate-flow-4-process-cuda { animation: flow-4-process-cuda 1.5s 4.3s forwards; }
+        @keyframes flow-4-process-cuda {
+            0%, 100% { opacity: 0; transform: scale(0.8); }
+            25%, 75% { opacity: 1; transform: scale(1); }
+        }
+
+        .animate-flow-5-out { animation: flow-5-out 1.5s 5.8s forwards; }
+        @keyframes flow-5-out {
+            0% { opacity: 0; transform: translateX(0) scaleY(1); }
+            50% { opacity: 1; }
+            100% { opacity: 0; transform: translateX(80px) scaleY(1.5); }
+        }
+
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+
+    <div class="container mx-auto px-4 py-8 md:py-12">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-100">Visualizing a GPU for AI Video Processing</h1>
+            <p class="text-lg text-gray-400 mt-2">Interactive diagram for a Frigate / AI Inference workflow.</p>
+        </header>
+
+        <main class="flex flex-col lg:flex-row items-center justify-center gap-8">
+
+            <!-- Left Side: The GPU Visualization -->
+            <div class="w-full max-w-2xl lg:w-3/5 relative h-[350px]">
+                <!-- REBUILT GPU VISUAL -->
+                <div class="w-full h-full relative flex items-center justify-center">
+                    <div class="relative w-[95%] h-[250px]">
+                        <!-- Main Card Body -->
+                        <div class="absolute top-[16px] left-0 w-full h-full bg-gray-800 rounded-lg shadow-2xl shadow-black/50 flex flex-col">
+                            <!-- IO Bracket -->
+                            <div class="fixed w-3 h-2/6 bg-gray-600 rounded-l-lg io-bracket"></div>
+                            <!-- PCIe Connector -->
+                            <div class="absolute top-[260px] left-[7%] w-[53%] h-7 gpu-pcb z-0"></div>
+                            <!-- Top part with components -->
+                            <div class="flex-grow flex p-4 gap-4">
+                                <!-- Components Area -->
+                                <div class="flex-1 grid grid-cols-12 gap-2">
+                                    <!-- NVDEC Section -->
+                                    <div id="nvdec-section" class="col-span-4 flex flex-col justify-center items-center ml-2 gap-4">
+                                        <div id="nvdec-1" class="nvdec-block w-full h-16 rounded-lg bg-indigo-900/50 flex items-center justify-center p-[2px]"><span class="font-semibold text-xs text-indigo-200 text-center">NVDEC 1</span></div>
+                                        <div id="nvdec-2" class="nvdec-block w-full h-16 rounded-lg bg-indigo-900/50 flex items-center justify-center p-[2px]"><span class="font-semibold text-xs text-indigo-200 text-center">NVDEC 2</span></div>
+                                    </div>
+                                    <!-- CUDA Cores Section -->
+                                    <div id="cuda-section" class="col-span-8 bg-gray-900/50 rounded-lg p-3 flex items-center justify-center">
+                                        <div id="cuda-grid" class="grid grid-cols-25 gap-[6px] w-full h-full">
+                                            <!-- JS Generated Cores -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Bottom part with fans (Fan Shroud) -->
+                            <div class="h-24 fan-shroud rounded-b-lg flex justify-end items-center px-8 gap-8">
+                                <div class="w-16 h-16 rounded-full fan flex items-center justify-center"><div class="w-12 h-12 rounded-full relative"><div class="fan-spinner"></div></div></div>
+                                <div class="w-16 h-16 rounded-full fan flex items-center justify-center"><div class="w-12 h-12 rounded-full relative"><div class="fan-spinner" style="animation-delay: -0.5s;"></div></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data flow animation elements (Positions Corrected) -->
+                <div id="flow-1" class="flow-dot" style="top: 50%; left: 0;"></div>
+                <div id="flow-2" class="flow-pulse w-16 h-16" style="top: 45%; left: 22%;"></div>
+                <div id="flow-3" class="flow-dot" style="top: 50%; left: 25%;"></div>
+                <div id="flow-4" class="flow-pulse w-32 h-32" style="top: 40%; left: 60%;"></div>
+                <div id="flow-5" class="flow-dot" style="top: 50%; left: 80%;"></div>
+            </div>
+
+            <!-- Right Side: Controls and Explanations -->
+            <div class="w-full max-w-xl lg:w-2/5">
+                <div class="bg-gray-800 rounded-2xl p-6">
+                    <h2 class="text-xl font-bold mb-4">Explore the Components</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+                        <button id="btn-cuda" class="w-full bg-teal-600 hover:bg-teal-500 transition-colors py-2 px-4 rounded-lg font-semibold">CUDA Cores</button>
+                        <button id="btn-nvdec" class="w-full bg-indigo-600 hover:bg-indigo-500 transition-colors py-2 px-4 rounded-lg font-semibold">NVDEC</button>
+                        <button id="btn-combo" class="w-full bg-amber-600 hover:bg-amber-500 transition-colors py-2 px-4 rounded-lg font-semibold">Processing Flow</button>
+                    </div>
+                    <div id="explanation-box" class="bg-gray-900/70 p-4 rounded-lg min-h-[220px] transition-all duration-300">
+                        <h3 id="explanation-title" class="text-lg font-bold text-gray-200 mb-2">Select a component</h3>
+                        <p id="explanation-text" class="text-gray-300">Click a button above to learn about each part and see the AI video processing workflow.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- DOM Element References ---
+        const cudaGrid = document.getElementById('cuda-grid');
+        const cudaSection = document.getElementById('cuda-section');
+        const nvdecBlocks = [document.getElementById('nvdec-1'), document.getElementById('nvdec-2')];
+        const nvdecSection = document.getElementById('nvdec-section');
+        
+        const btnCuda = document.getElementById('btn-cuda');
+        const btnNvdec = document.getElementById('btn-nvdec');
+        const btnCombo = document.getElementById('btn-combo');
+
+        const explanationTitle = document.getElementById('explanation-title');
+        const explanationText = document.getElementById('explanation-text');
+
+        const flowElements = [
+            document.getElementById('flow-1'),
+            document.getElementById('flow-2'),
+            document.getElementById('flow-3'),
+            document.getElementById('flow-4'),
+            document.getElementById('flow-5'),
+        ];
+
+        const NUM_CORES = 225; // Adjusted for better fit
+
+        // --- Content for Explanations ---
+        const explanations = {
+            cuda: {
+                title: "CUDA Cores: The AI Brains",
+                text: "These are thousands of small, efficient cores designed for parallel computing. In a Frigate workflow, after a video is decoded, the raw frames are sent here. The CUDA cores run the AI model (e.g., object detection) to find people, cars, etc. This is the heavy-lifting, computational part of the process."
+            },
+            nvdec: {
+                title: "NVDEC: The Video Decoder",
+                text: "This is dedicated hardware for decoding compressed video. Frigate offloads the CPU-intensive task of decoding H.264/H.265 streams from cameras to NVDEC. This is extremely efficient and frees up the CPU and CUDA cores, allowing the GPU to handle many more camera streams."
+            },
+            combo: {
+                title: "Frigate's Processing Flow",
+                text: "1. A compressed video stream enters the GPU from a camera. <br>2. **NVDEC** decodes the stream into raw video frames at high speed. <br>3. The raw frames are passed to the **CUDA cores**. <br>4. The AI model runs on the CUDA cores to perform object detection. <br>5. The results (e.g., object data) are sent out for alerts or recording."
+            },
+            default: {
+                title: "Select a component",
+                text: "Click a button above to learn about each part and see the AI video processing workflow."
+            }
+        };
+
+        // --- Functions ---
+        function generateCudaCores() {
+            cudaGrid.innerHTML = '';
+            for (let i = 0; i < NUM_CORES; i++) {
+                const core = document.createElement('div');
+                core.classList.add('cuda-core', 'rounded-sm');
+                cudaGrid.appendChild(core);
+            }
+        }
+
+        function resetAllHighlights() {
+            Array.from(cudaGrid.children).forEach(c => c.classList.remove('highlight'));
+            nvdecBlocks.forEach(block => block.classList.remove('highlight'));
+            cudaSection.classList.remove('component-fade');
+            nvdecSection.classList.remove('component-fade');
+            
+            // Reset animation classes
+            flowElements[0].classList.remove('animate-flow-1-in');
+            flowElements[1].classList.remove('animate-flow-2-process-nvdec');
+            flowElements[2].classList.remove('animate-flow-3-to-cuda');
+            flowElements[3].classList.remove('animate-flow-4-process-cuda');
+            flowElements[4].classList.remove('animate-flow-5-out');
+        }
+
+        function updateExplanation(key) {
+            explanationTitle.innerHTML = explanations[key].title;
+            explanationText.innerHTML = explanations[key].text;
+        }
+
+        function handleCudaClick() {
+            resetAllHighlights();
+            nvdecSection.classList.add('component-fade');
+            Array.from(cudaGrid.children).forEach(c => c.classList.add('highlight'));
+            updateExplanation('cuda');
+        }
+
+        function handleNvdecClick() {
+            resetAllHighlights();
+            cudaSection.classList.add('component-fade');
+            nvdecBlocks.forEach(block => block.classList.add('highlight'));
+            updateExplanation('nvdec');
+        }
+
+        function handleComboClick() {
+            resetAllHighlights();
+            updateExplanation('combo');
+            setTimeout(() => {
+                flowElements[0].classList.add('animate-flow-1-in');
+                flowElements[1].classList.add('animate-flow-2-process-nvdec');
+                flowElements[2].classList.add('animate-flow-3-to-cuda');
+                flowElements[3].classList.add('animate-flow-4-process-cuda');
+                flowElements[4].classList.add('animate-flow-5-out');
+            }, 100);
+        }
+
+        // --- Initialization ---
+        btnCuda.addEventListener('click', handleCudaClick);
+        btnNvdec.addEventListener('click', handleNvdecClick);
+        btnCombo.addEventListener('click', handleComboClick);
+
+        window.onload = () => {
+            generateCudaCores();
+            updateExplanation('default');
+        };
+    </script>
+</body>
+</html>
