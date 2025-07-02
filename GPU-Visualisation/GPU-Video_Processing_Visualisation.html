@@ -14,15 +14,14 @@
         <style>
             body {
                 font-family: "Inter", sans-serif;
-                overflow-x: hidden;
             }
 
-            /* Explicitly define the 25-column grid class */
+            /* Grid class */
             .grid-cols-25 {
                 grid-template-columns: repeat(25, minmax(0, 1fr));
             }
 
-            /* Enhanced CUDA Core Styles */
+            /* CUDA Core Styles */
             .cuda-core {
                 width: 10px;
                 height: 10px;
@@ -32,6 +31,7 @@
                 transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
                 transform-origin: center;
                 will-change: transform, opacity, box-shadow;
+                position: relative;
             }
 
             .cuda-core.highlight {
@@ -43,9 +43,10 @@
                     0 0 24px rgba(94, 234, 212, 0.4),
                     inset 0 1px 2px rgba(255, 255, 255, 0.3);
                 border-radius: 3px;
+                z-index: 1;
             }
 
-            /* Enhanced NVDEC Styles */
+            /* NVDEC Styles */
             .nvdec-block {
                 transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
                 border: 2px solid #6366f1;
@@ -53,6 +54,7 @@
                 overflow: hidden;
                 will-change: transform, box-shadow, background;
                 cursor: pointer;
+                z-index: 20;
             }
 
             .nvdec-block::before {
@@ -69,6 +71,7 @@
                     transparent
                 );
                 transition: left 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+                pointer-events: none;
             }
 
             .nvdec-block.highlight {
@@ -85,7 +88,7 @@
                 left: 100%;
             }
 
-            /* Fixed PCIe Connector Styles */
+            /* PCIe Connector Styles */
             .pcie-connector {
                 transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
                 position: absolute;
@@ -103,6 +106,7 @@
                 box-shadow:
                     inset 0 1px 0 rgba(251, 191, 36, 0.3),
                     0 2px 4px rgba(0, 0, 0, 0.3);
+                z-index: 20;
             }
 
             .pcie-connector::before {
@@ -122,6 +126,7 @@
                 border-radius: 2px;
                 opacity: 0.8;
                 transition: all 0.8s ease;
+                pointer-events: none;
             }
 
             .pcie-connector::after {
@@ -138,6 +143,7 @@
                     transparent
                 );
                 transition: left 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+                pointer-events: none;
             }
 
             .pcie-connector.highlight {
@@ -154,6 +160,7 @@
                     inset 0 1px 4px rgba(255, 255, 255, 0.3),
                     inset 0 -1px 4px rgba(0, 0, 0, 0.2);
                 border-color: #fbbf24;
+                z-index: 21;
             }
 
             .pcie-connector.highlight::before {
@@ -171,24 +178,15 @@
                 left: 100%;
             }
 
-            /* PCIe connector text styling */
-            .pcie-text {
-                position: relative;
-                z-index: 10;
-                font-weight: 600;
-                font-size: 10px;
-                color: #fef3c7;
-                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
-                letter-spacing: 0.5px;
-                pointer-events: none;
-            }
-
             /* CUDA Section Clickable */
             #cuda-section {
                 cursor: pointer;
+                position: relative;
+                z-index: 20;
+                transform-origin: center;
             }
 
-            /* Improved fade effect */
+            /* Fade effect */
             .component-fade {
                 opacity: 0.15;
                 transform: scale(0.96) translateZ(0);
@@ -251,7 +249,68 @@
                 }
             }
 
-            /* Button hover enhancements */
+            /* Data Path Visualization Styles */
+            .path-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+                z-index: 1;
+            }
+
+            .path-line {
+                position: absolute;
+                background: linear-gradient(90deg, #06b6d4, #0891b2, #0e7490);
+                box-shadow: 
+                    0 0 8px rgba(6, 182, 212, 0.6),
+                    0 0 16px rgba(6, 182, 212, 0.3);
+                opacity: 0;
+                border-radius: 2px;
+                z-index: 1;
+            }
+
+            .path-line.horizontal {
+                height: 3px;
+                transform: scaleX(0);
+                transform-origin: left;
+                transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.4s ease;
+            }
+
+            .path-line.vertical {
+                width: 3px;
+                transform: scaleY(0);
+                transform-origin: top;
+                transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.4s ease;
+            }
+
+            .path-line.horizontal.reverse {
+                transform-origin: right;
+            }
+
+            .path-line.vertical.reverse {
+                transform-origin: bottom;
+            }
+
+            .path-line.animate {
+                opacity: 1;
+            }
+
+            .path-line.horizontal.animate {
+                transform: scaleX(1);
+            }
+
+            .path-line.vertical.animate {
+                transform: scaleY(1);
+            }
+
+            .path-line.hidden-under-component {
+                opacity: 0 !important;
+                visibility: hidden !important;
+            }
+
+            /* Button styles */
             button {
                 transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
                 transform: translateZ(0);
@@ -266,7 +325,7 @@
                 transform: translateY(0) scale(0.98);
             }
 
-            /* Explanation box smooth transitions */
+            /* Explanation box transitions */
             #explanation-box {
                 transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
             }
@@ -304,21 +363,17 @@
             >
                 <!-- Left Side: The GPU Visualization -->
                 <div class="w-full max-w-2xl lg:w-3/5 relative h-[350px]">
-                    <!-- REBUILT GPU VISUAL -->
-                    <div
-                        class="w-full h-full relative flex items-center justify-center"
-                    >
+                    <div class="w-full h-full relative flex items-center justify-center">
                         <div class="relative w-[95%] h-[250px]">
                             <!-- Main Card Body -->
-                            <div
-                                class="absolute top-[16px] left-0 w-full h-full bg-gray-800 rounded-lg shadow-2xl shadow-black/50 flex flex-col"
-                            >
-                                <!-- IO Bracket -->
-                                <div
-                                    class="absolute left-0 top-0 w-3 h-[300px] bg-gray-600 rounded-l-lg io-bracket"
-                                ></div>
+                            <div class="absolute top-[16px] left-0 w-full h-full bg-gray-800 rounded-lg shadow-2xl shadow-black/50 flex flex-col">
+                                <!-- Data Path Overlay -->
+                                <div id="path-overlay" class="path-overlay"></div>
 
-                                <!-- PCIe Connector - Fixed positioning and styling -->
+                                <!-- IO Bracket -->
+                                <div class="absolute left-0 top-0 w-3 h-[300px] bg-gray-600 rounded-l-lg io-bracket"></div>
+
+                                <!-- PCIe Connector -->
                                 <div
                                     id="pcie-connector"
                                     class="pcie-connector bottom-[-34px] left-[10%] w-[60%] h-[24px] z-10 flex items-center justify-center"
@@ -338,20 +393,14 @@
                                                 class="nvdec-block w-full h-16 rounded-lg bg-indigo-900/50 flex items-center justify-center p-[2px]"
                                                 data-nvdec-index="0"
                                             >
-                                                <span
-                                                    class="font-semibold text-xs text-indigo-200 text-center pointer-events-none"
-                                                    >NVDEC 1</span
-                                                >
+                                                <span class="font-semibold text-xs text-indigo-200 text-center pointer-events-none">NVDEC 1</span>
                                             </div>
                                             <div
                                                 id="nvdec-2"
                                                 class="nvdec-block w-full h-16 rounded-lg bg-indigo-900/50 flex items-center justify-center p-[2px]"
                                                 data-nvdec-index="1"
                                             >
-                                                <span
-                                                    class="font-semibold text-xs text-indigo-200 text-center pointer-events-none"
-                                                    >NVDEC 2</span
-                                                >
+                                                <span class="font-semibold text-xs text-indigo-200 text-center pointer-events-none">NVDEC 2</span>
                                             </div>
                                         </div>
                                         <!-- CUDA Cores Section -->
@@ -373,29 +422,14 @@
                                     id="fan-section"
                                     class="h-24 fan-shroud rounded-b-lg flex justify-end items-center px-8 gap-8"
                                 >
-                                    <div
-                                        class="w-16 h-16 rounded-full fan flex items-center justify-center"
-                                    >
-                                        <div
-                                            class="w-12 h-12 rounded-full relative"
-                                        >
-                                            <div
-                                                class="fan-spinner"
-                                                id="fan-1"
-                                            ></div>
+                                    <div class="w-16 h-16 rounded-full fan flex items-center justify-center">
+                                        <div class="w-12 h-12 rounded-full relative">
+                                            <div class="fan-spinner" id="fan-1"></div>
                                         </div>
                                     </div>
-                                    <div
-                                        class="w-16 h-16 rounded-full fan flex items-center justify-center"
-                                    >
-                                        <div
-                                            class="w-12 h-12 rounded-full relative"
-                                        >
-                                            <div
-                                                class="fan-spinner"
-                                                id="fan-2"
-                                                style="animation-delay: -1s"
-                                            ></div>
+                                    <div class="w-16 h-16 rounded-full fan flex items-center justify-center">
+                                        <div class="w-12 h-12 rounded-full relative">
+                                            <div class="fan-spinner" id="fan-2" style="animation-delay: -1s"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -428,6 +462,12 @@
                                 class="w-full bg-yellow-600 hover:bg-yellow-500 transition-colors py-2 px-4 rounded-lg font-semibold"
                             >
                                 PCIe Connector
+                            </button>
+                            <button
+                                id="btn-data-path"
+                                class="w-full bg-cyan-600 hover:bg-cyan-500 transition-colors py-2 px-4 rounded-lg font-semibold"
+                            >
+                                📊 Data Path
                             </button>
                         </div>
                         <div
@@ -463,17 +503,212 @@
             const pcieConnector = document.getElementById("pcie-connector");
             const fan1 = document.getElementById("fan-1");
             const fan2 = document.getElementById("fan-2");
+            const pathOverlay = document.getElementById("path-overlay");
 
             const btnCuda = document.getElementById("btn-cuda");
             const btnNvdec = document.getElementById("btn-nvdec");
             const btnPcie = document.getElementById("btn-pcie");
+            const btnDataPath = document.getElementById("btn-data-path");
 
-            const explanationTitle =
-                document.getElementById("explanation-title");
+            const explanationTitle = document.getElementById("explanation-title");
             const explanationText = document.getElementById("explanation-text");
 
             const NUM_CORES = 225;
             let animationTimeouts = [];
+            let pathAnimationActive = false;
+
+            // --- Utility Functions for Component Overlap Detection ---
+            function getComponentBounds() {
+                const overlayRect = pathOverlay.getBoundingClientRect();
+                
+                return [
+                    {
+                        name: 'nvdec1',
+                        left: nvdecBlocks[0].getBoundingClientRect().left - overlayRect.left,
+                        right: nvdecBlocks[0].getBoundingClientRect().right - overlayRect.left,
+                        top: nvdecBlocks[0].getBoundingClientRect().top - overlayRect.top,
+                        bottom: nvdecBlocks[0].getBoundingClientRect().bottom - overlayRect.top
+                    },
+                    {
+                        name: 'nvdec2',
+                        left: nvdecBlocks[1].getBoundingClientRect().left - overlayRect.left,
+                        right: nvdecBlocks[1].getBoundingClientRect().right - overlayRect.left,
+                        top: nvdecBlocks[1].getBoundingClientRect().top - overlayRect.top,
+                        bottom: nvdecBlocks[1].getBoundingClientRect().bottom - overlayRect.top
+                    },
+                    {
+                        name: 'cuda',
+                        left: cudaSection.getBoundingClientRect().left - overlayRect.left,
+                        right: cudaSection.getBoundingClientRect().right - overlayRect.left,
+                        top: cudaSection.getBoundingClientRect().top - overlayRect.top,
+                        bottom: cudaSection.getBoundingClientRect().bottom - overlayRect.top
+                    },
+                    {
+                        name: 'pcie',
+                        left: pcieConnector.getBoundingClientRect().left - overlayRect.left,
+                        right: pcieConnector.getBoundingClientRect().right - overlayRect.left,
+                        top: pcieConnector.getBoundingClientRect().top - overlayRect.top,
+                        bottom: pcieConnector.getBoundingClientRect().bottom - overlayRect.top
+                    }
+                ];
+            }
+
+            function splitLineByComponents(x1, y1, x2, y2, isVertical, componentBounds) {
+                const segments = [];
+                const lineThickness = 3;
+                
+                if (isVertical) {
+                    // For vertical lines, check y-axis intersections
+                    const lineX = x1;
+                    const startY = Math.min(y1, y2);
+                    const endY = Math.max(y1, y2);
+                    const isReversed = y1 > y2;
+                    
+                    // Find all intersections with components
+                    const intersections = [];
+                    componentBounds.forEach(comp => {
+                        if (lineX >= comp.left - lineThickness/2 && lineX <= comp.right + lineThickness/2) {
+                            if (comp.top < endY && comp.bottom > startY) {
+                                intersections.push({
+                                    start: Math.max(startY, comp.top),
+                                    end: Math.min(endY, comp.bottom),
+                                    component: comp.name
+                                });
+                            }
+                        }
+                    });
+                    
+                    // Sort intersections by start position
+                    intersections.sort((a, b) => a.start - b.start);
+                    
+                    // Create segments between intersections
+                    let currentY = startY;
+                    
+                    intersections.forEach(intersection => {
+                        // Add visible segment before intersection
+                        if (currentY < intersection.start) {
+                            segments.push({
+                                x: x1 - lineThickness/2,
+                                y: currentY,
+                                width: lineThickness,
+                                height: intersection.start - currentY,
+                                isVertical: true,
+                                isReversed: isReversed,
+                                visible: true
+                            });
+                        }
+                        
+                        // Add hidden segment for intersection
+                        segments.push({
+                            x: x1 - lineThickness/2,
+                            y: intersection.start,
+                            width: lineThickness,
+                            height: intersection.end - intersection.start,
+                            isVertical: true,
+                            isReversed: isReversed,
+                            visible: false
+                        });
+                        
+                        currentY = intersection.end;
+                    });
+                    
+                    // Add final visible segment
+                    if (currentY < endY) {
+                        segments.push({
+                            x: x1 - lineThickness/2,
+                            y: currentY,
+                            width: lineThickness,
+                            height: endY - currentY,
+                            isVertical: true,
+                            isReversed: isReversed,
+                            visible: true
+                        });
+                    }
+                    
+                } else {
+                    // For horizontal lines, check x-axis intersections
+                    const lineY = y1;
+                    const startX = Math.min(x1, x2);
+                    const endX = Math.max(x1, x2);
+                    const isReversed = x1 > x2;
+                    
+                    // Find all intersections with components
+                    const intersections = [];
+                    componentBounds.forEach(comp => {
+                        if (lineY >= comp.top - lineThickness/2 && lineY <= comp.bottom + lineThickness/2) {
+                            if (comp.left < endX && comp.right > startX) {
+                                intersections.push({
+                                    start: Math.max(startX, comp.left),
+                                    end: Math.min(endX, comp.right),
+                                    component: comp.name
+                                });
+                            }
+                        }
+                    });
+                    
+                    // Sort intersections by start position
+                    intersections.sort((a, b) => a.start - b.start);
+                    
+                    // Create segments between intersections
+                    let currentX = startX;
+                    
+                    intersections.forEach(intersection => {
+                        // Add visible segment before intersection
+                        if (currentX < intersection.start) {
+                            segments.push({
+                                x: currentX,
+                                y: y1 - lineThickness/2,
+                                width: intersection.start - currentX,
+                                height: lineThickness,
+                                isVertical: false,
+                                isReversed: isReversed,
+                                visible: true
+                            });
+                        }
+                        
+                        // Add hidden segment for intersection
+                        segments.push({
+                            x: intersection.start,
+                            y: y1 - lineThickness/2,
+                            width: intersection.end - intersection.start,
+                            height: lineThickness,
+                            isVertical: false,
+                            isReversed: isReversed,
+                            visible: false
+                        });
+                        
+                        currentX = intersection.end;
+                    });
+                    
+                    // Add final visible segment
+                    if (currentX < endX) {
+                        segments.push({
+                            x: currentX,
+                            y: y1 - lineThickness/2,
+                            width: endX - currentX,
+                            height: lineThickness,
+                            isVertical: false,
+                            isReversed: isReversed,
+                            visible: true
+                        });
+                    }
+                }
+                
+                // If no intersections found, return the full line as visible
+                if (segments.length === 0) {
+                    segments.push({
+                        x: isVertical ? x1 - lineThickness/2 : Math.min(x1, x2),
+                        y: isVertical ? Math.min(y1, y2) : y1 - lineThickness/2,
+                        width: isVertical ? lineThickness : Math.abs(x2 - x1),
+                        height: isVertical ? Math.abs(y2 - y1) : lineThickness,
+                        isVertical: isVertical,
+                        isReversed: isVertical ? y1 > y2 : x1 > x2,
+                        visible: true
+                    });
+                }
+                
+                return segments;
+            }
 
             // --- Fan Speed Control Functions ---
             function setFanSpeed(speed) {
@@ -509,6 +744,10 @@
                     title: "PCIe Connector: The Data Highway",
                     text: "The PCIe x16 slot is the high-speed connection between the GPU and motherboard. In AI video processing, this carries massive amounts of data: video streams from cameras, decoded frames, AI model weights, and inference results. The PCIe 4.0 x16 connection provides up to 32 GB/s of bandwidth, crucial for real-time processing of multiple camera feeds.",
                 },
+                dataPath: {
+                    title: "Data Flow Visualization",
+                    text: "Watch how data flows through the GPU: 1) Video streams enter via PCIe → 2) NVDEC 2 decodes the video → 3) NVDEC 1 processes frames → 4) CUDA cores perform AI inference → 5) Results travel back through PCIe to the system. This organized path shows the efficient pipeline that makes real-time AI video processing possible.",
+                },
                 default: {
                     title: "Select a component",
                     text: "Click a button above or click directly on the GPU components to learn about each part of the AI video processing workflow.",
@@ -529,8 +768,14 @@
                 animationTimeouts = [];
             }
 
+            function clearPathVisualization() {
+                pathOverlay.innerHTML = "";
+                pathAnimationActive = false;
+            }
+
             function resetAllHighlights() {
                 clearAllTimeouts();
+                clearPathVisualization();
 
                 // Reset CUDA cores
                 Array.from(cudaGrid.children).forEach((core) => {
@@ -565,13 +810,178 @@
             }
 
             function staggerCudaHighlight() {
-                const cores = Array.from(cudaGrid.children);
-                cores.forEach((core, index) => {
-                    const timeout = setTimeout(() => {
-                        core.classList.add("highlight");
-                    }, index * 8);
-                    animationTimeouts.push(timeout);
+                return new Promise(resolve => {
+                    const cores = Array.from(cudaGrid.children);
+                    let lastCoreIndex = cores.length - 1;
+                    let completedCores = 0;
+                    
+                    cores.forEach((core, index) => {
+                        const timeout = setTimeout(() => {
+                            core.classList.add("highlight");
+                            completedCores++;
+                            
+                            if (completedCores >= cores.length) {
+                                setTimeout(resolve, 200); // Small delay after last core is lit
+                            }
+                        }, index * 8);
+                        animationTimeouts.push(timeout);
+                    });
                 });
+            }
+
+            function createPathElement(x, y, width, height, isVertical = false, isReversed = false, visible = true, pathOrder = 0) {
+                const pathElement = document.createElement("div");
+                const orientation = isVertical ? 'vertical' : 'horizontal';
+                pathElement.className = `path-line ${orientation}${isReversed ? ' reverse' : ''}${!visible ? ' hidden-under-component' : ''}`;
+                pathElement.style.left = `${x}px`;
+                pathElement.style.top = `${y}px`;
+                pathElement.style.width = `${width}px`;
+                pathElement.style.height = `${height}px`;
+                pathElement.dataset.pathOrder = pathOrder; // Add path order for proper sequencing
+                return pathElement;
+            }
+
+            // Improved data path animation with sequential highlighting
+            async function animateDataPath() {
+                if (pathAnimationActive) return;
+                pathAnimationActive = true;
+
+                // Clear any existing paths
+                pathOverlay.innerHTML = "";
+
+                // Get component positions relative to the path overlay
+                const overlayRect = pathOverlay.getBoundingClientRect();
+                const pcieRect = pcieConnector.getBoundingClientRect();
+                const nvdec2Rect = nvdecBlocks[1].getBoundingClientRect();
+                const nvdec1Rect = nvdecBlocks[0].getBoundingClientRect();
+                const cudaRect = cudaSection.getBoundingClientRect();
+
+                // Calculate relative positions
+                const pcieCenter = {
+                    x: pcieRect.left - overlayRect.left + pcieRect.width / 2,
+                    y: pcieRect.top - overlayRect.top + pcieRect.height / 2
+                };
+
+                const nvdec2Center = {
+                    x: nvdec2Rect.left - overlayRect.left + nvdec2Rect.width / 2,
+                    y: nvdec2Rect.top - overlayRect.top + nvdec2Rect.height / 2
+                };
+
+                const nvdec1Center = {
+                    x: nvdec1Rect.left - overlayRect.left + nvdec1Rect.width / 2,
+                    y: nvdec1Rect.top - overlayRect.top + nvdec1Rect.height / 2
+                };
+
+                const cudaCenter = {
+                    x: cudaRect.left - overlayRect.left + cudaRect.width / 2,
+                    y: cudaRect.top - overlayRect.top + cudaRect.height / 2
+                };
+
+                // Get component bounds for overlap detection
+                const componentBounds = getComponentBounds();
+
+                // Define the path points with 90-degree turns
+                const pathPoints = [
+                    { x: pcieCenter.x, y: pcieCenter.y, label: "PCIe In" },
+                    { x: pcieCenter.x, y: pcieCenter.y - 40, label: "Turn 1" },
+                    { x: nvdec2Center.x, y: pcieCenter.y - 40, label: "Turn 2" },
+                    { x: nvdec2Center.x, y: nvdec2Center.y, label: "To NVDEC 2" },
+                    { x: nvdec1Center.x, y: nvdec2Center.y, label: "NVDEC 2" },
+                    { x: nvdec1Center.x, y: nvdec1Center.y, label: "NVDEC 1" },
+                    { x: nvdec1Center.x + 98.5, y: nvdec1Center.y, label: "Turn 3" },
+                    { x: nvdec1Center.x + 98.5, y: cudaCenter.y - 65, label: "Turn 4" },
+                    { x: cudaCenter.x, y: cudaCenter.y, label: "CUDA Cores" },
+                    { x: cudaCenter.x + 185, y: cudaCenter.y, label: "Turn 5" },
+                    { x: cudaCenter.x + 185, y: cudaCenter.y + 88, label: "Turn 6" },
+                    { x: pcieCenter.x + 20, y: cudaCenter.y + 88, label: "Turn 7" },
+                    { x: pcieCenter.x + 20, y: pcieCenter.y, label: "PCIe Out" }
+                ];
+
+                // Create path segments with proper ordering
+                const pathSegmentsByOrder = {};
+
+                for (let i = 0; i < pathPoints.length - 1; i++) {
+                    const start = pathPoints[i];
+                    const end = pathPoints[i + 1];
+                    
+                    const isVertical = start.x === end.x;
+                    const isReversed = isVertical ? start.y > end.y : start.x > end.x;
+                    
+                    // Split line segments based on component intersections
+                    const segments = splitLineByComponents(start.x, start.y, end.x, end.y, isVertical, componentBounds);
+                    
+                    if (!pathSegmentsByOrder[i]) {
+                        pathSegmentsByOrder[i] = [];
+                    }
+
+                    segments.forEach(segment => {
+                        const pathElement = createPathElement(
+                            segment.x, 
+                            segment.y, 
+                            segment.width, 
+                            segment.height, 
+                            segment.isVertical, 
+                            segment.isReversed,
+                            segment.visible,
+                            i
+                        );
+                        pathOverlay.appendChild(pathElement);
+                        
+                        pathSegmentsByOrder[i].push({
+                            element: pathElement,
+                            visible: segment.visible
+                        });
+                    });
+                }
+
+                // Sequential component highlighting based on path progress
+                const componentHighlights = [
+                    { element: pcieConnector, segment: 0, action: 'highlight' },
+                    { element: nvdecBlocks[1], segment: 3, action: 'highlight' },
+                    { element: nvdecBlocks[0], segment: 5, action: 'highlight' },
+                    { segment: 8, action: 'cuda-highlight' },
+                    { element: pcieConnector, segment: 12, action: 'highlight' }
+                ];
+
+                // Animate segments and components sequentially
+                for (let i = 0; i < Object.keys(pathSegmentsByOrder).length; i++) {
+                    const segmentKey = i.toString();
+                    const segments = pathSegmentsByOrder[i];
+                    
+                    // Animate path segments
+                    segments.forEach(segmentInfo => {
+                        if (segmentInfo.visible && !segmentInfo.element.classList.contains("hidden-under-component")) {
+                            segmentInfo.element.classList.add("animate");
+                        }
+                    });
+
+                    // Check if we need to highlight a component at this point
+                    const componentToHighlight = componentHighlights.find(h => h.segment === i);
+                    if (componentToHighlight) {
+                        if (componentToHighlight.action === 'cuda-highlight') {
+                            await staggerCudaHighlight();
+                        } else if (componentToHighlight.element) {
+                            componentToHighlight.element.classList.add("highlight");
+                            await new Promise(resolve => {
+                                setTimeout(() => {
+                                    componentToHighlight.element.classList.remove("highlight");
+                                    resolve();
+                                }, 800);
+                            });
+                        }
+                    } else {
+                        // Wait for animation to complete before moving to next segment
+                        await new Promise(resolve => setTimeout(resolve, 400));
+                    }
+                }
+
+                // Final PCIe highlight
+                pcieConnector.classList.add("highlight");
+                setTimeout(() => {
+                    pcieConnector.classList.remove("highlight");
+                }, 800);
+
+                pathAnimationActive = false;
             }
 
             function handleCudaClick() {
@@ -580,7 +990,7 @@
                 pcieConnector.classList.add("component-fade");
                 setTimeout(() => staggerCudaHighlight(), 100);
                 updateExplanation("cuda");
-                setFanSpeed("fast"); // Fans spin very fast when CUDA cores are highlighted
+                setFanSpeed("fast");
             }
 
             function handleNvdecClick(startIndex = 0) {
@@ -588,13 +998,11 @@
                 cudaSection.classList.add("component-fade");
                 pcieConnector.classList.add("component-fade");
 
-                // Create array with starting block first, then the other one
                 const orderedBlocks =
                     startIndex === 0
                         ? [nvdecBlocks[0], nvdecBlocks[1]]
                         : [nvdecBlocks[1], nvdecBlocks[0]];
 
-                // Staggered NVDEC highlighting starting from clicked block
                 orderedBlocks.forEach((block, index) => {
                     const timeout = setTimeout(() => {
                         block.classList.add("highlight");
@@ -603,7 +1011,7 @@
                 });
 
                 updateExplanation("nvdec");
-                setFanSpeed("medium"); // Fans spin a little faster when NVDEC is highlighted
+                setFanSpeed("medium");
             }
 
             function handlePcieClick() {
@@ -611,26 +1019,36 @@
                 cudaSection.classList.add("component-fade");
                 nvdecSection.classList.add("component-fade");
 
-                // Highlight PCIe connector with slight delay for effect
                 const timeout = setTimeout(() => {
                     pcieConnector.classList.add("highlight");
                 }, 100);
                 animationTimeouts.push(timeout);
 
                 updateExplanation("pcie");
-                setFanSpeed("normal"); // Fans spin at normal speed when PCIe is highlighted
+                setFanSpeed("normal");
+            }
+
+            function handleDataPathClick() {
+                resetAllHighlights();
+                updateExplanation("dataPath");
+                setFanSpeed("fast");
+                
+                setTimeout(() => {
+                    animateDataPath();
+                }, 200);
             }
 
             function handleResetClick() {
                 resetAllHighlights();
                 updateExplanation("default");
-                setFanSpeed("normal"); // Fans spin at normal speed when nothing is highlighted
+                setFanSpeed("normal");
             }
 
             // --- Event Listeners ---
             btnCuda.addEventListener("click", handleCudaClick);
-            btnNvdec.addEventListener("click", () => handleNvdecClick(0)); // Default to NVDEC 1 first
+            btnNvdec.addEventListener("click", () => handleNvdecClick(0));
             btnPcie.addEventListener("click", handlePcieClick);
+            btnDataPath.addEventListener("click", handleDataPathClick);
 
             // Direct component clicking
             cudaSection.addEventListener("click", handleCudaClick);
@@ -643,17 +1061,16 @@
 
             // Click anywhere else to reset
             document.addEventListener("click", function (event) {
-                // Check if the click was on an interactive element
                 const isInteractiveElement =
                     event.target.closest("#btn-cuda") ||
                     event.target.closest("#btn-nvdec") ||
                     event.target.closest("#btn-pcie") ||
+                    event.target.closest("#btn-data-path") ||
                     event.target.closest("#cuda-section") ||
                     event.target.closest(".nvdec-block") ||
                     event.target.closest("#pcie-connector") ||
                     event.target.closest("#explanation-box");
 
-                // If not on an interactive element, reset
                 if (!isInteractiveElement) {
                     handleResetClick();
                 }
@@ -668,19 +1085,17 @@
             window.onload = () => {
                 generateCudaCores();
                 updateExplanation("default");
-                setFanSpeed("normal"); // Initialize fans at normal speed
+                setFanSpeed("normal");
 
                 // Add subtle entrance animation
-                document.querySelector("main").style.opacity = "0";
-                document.querySelector("main").style.transform =
-                    "translateY(20px)";
+                const main = document.querySelector("main");
+                main.style.opacity = "0";
+                main.style.transform = "translateY(20px)";
 
                 setTimeout(() => {
-                    document.querySelector("main").style.transition =
-                        "all 0.8s cubic-bezier(0.23, 1, 0.32, 1)";
-                    document.querySelector("main").style.opacity = "1";
-                    document.querySelector("main").style.transform =
-                        "translateY(0)";
+                    main.style.transition = "all 0.8s cubic-bezier(0.23, 1, 0.32, 1)";
+                    main.style.opacity = "1";
+                    main.style.transform = "translateY(0)";
                 }, 100);
             };
         </script>
