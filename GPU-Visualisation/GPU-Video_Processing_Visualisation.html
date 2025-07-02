@@ -216,7 +216,9 @@
                 width: 100%;
                 height: 100%;
                 position: relative;
-                animation: spin 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+                --fan-duration: 2s;
+                animation: spin var(--fan-duration) linear infinite;
+                transition: --fan-duration 0.5s ease;
             }
             .fan-spinner::before,
             .fan-spinner::after {
@@ -377,7 +379,10 @@
                                         <div
                                             class="w-12 h-12 rounded-full relative"
                                         >
-                                            <div class="fan-spinner"></div>
+                                            <div
+                                                class="fan-spinner"
+                                                id="fan-1"
+                                            ></div>
                                         </div>
                                     </div>
                                     <div
@@ -388,7 +393,8 @@
                                         >
                                             <div
                                                 class="fan-spinner"
-                                                style="animation-delay: -0.5s"
+                                                id="fan-2"
+                                                style="animation-delay: -1s"
                                             ></div>
                                         </div>
                                     </div>
@@ -455,6 +461,8 @@
             ];
             const nvdecSection = document.getElementById("nvdec-section");
             const pcieConnector = document.getElementById("pcie-connector");
+            const fan1 = document.getElementById("fan-1");
+            const fan2 = document.getElementById("fan-2");
 
             const btnCuda = document.getElementById("btn-cuda");
             const btnNvdec = document.getElementById("btn-nvdec");
@@ -466,6 +474,26 @@
 
             const NUM_CORES = 225;
             let animationTimeouts = [];
+
+            // --- Fan Speed Control Functions ---
+            function setFanSpeed(speed) {
+                let duration;
+                switch (speed) {
+                    case "fast":
+                        duration = "0.4s";
+                        break;
+                    case "medium":
+                        duration = "1.2s";
+                        break;
+                    case "normal":
+                    default:
+                        duration = "2s";
+                        break;
+                }
+
+                fan1.style.setProperty("--fan-duration", duration);
+                fan2.style.setProperty("--fan-duration", duration);
+            }
 
             // --- Content for Explanations ---
             const explanations = {
@@ -552,6 +580,7 @@
                 pcieConnector.classList.add("component-fade");
                 setTimeout(() => staggerCudaHighlight(), 100);
                 updateExplanation("cuda");
+                setFanSpeed("fast"); // Fans spin very fast when CUDA cores are highlighted
             }
 
             function handleNvdecClick(startIndex = 0) {
@@ -574,6 +603,7 @@
                 });
 
                 updateExplanation("nvdec");
+                setFanSpeed("medium"); // Fans spin a little faster when NVDEC is highlighted
             }
 
             function handlePcieClick() {
@@ -588,11 +618,13 @@
                 animationTimeouts.push(timeout);
 
                 updateExplanation("pcie");
+                setFanSpeed("normal"); // Fans spin at normal speed when PCIe is highlighted
             }
 
             function handleResetClick() {
                 resetAllHighlights();
                 updateExplanation("default");
+                setFanSpeed("normal"); // Fans spin at normal speed when nothing is highlighted
             }
 
             // --- Event Listeners ---
@@ -636,6 +668,7 @@
             window.onload = () => {
                 generateCudaCores();
                 updateExplanation("default");
+                setFanSpeed("normal"); // Initialize fans at normal speed
 
                 // Add subtle entrance animation
                 document.querySelector("main").style.opacity = "0";
